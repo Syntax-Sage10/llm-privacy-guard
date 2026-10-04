@@ -1,92 +1,49 @@
 # Privacy Guard
 
-A pure Python backend built with Flask that protects user privacy during AI interactions. It uses regex-based pattern matching to scan prompts for sensitive data (like emails, cards, and SSNs), swaps them out for consistent placeholder tokens (like `<EMAIL_1>`), and securely rehydrates the AI model's response so it reads naturally.
+A Flask app that protects personal data during AI interactions. It detects sensitive values in a prompt, swaps them for consistent placeholder tokens (like `<EMAIL_1>`), and restores them in the model's reply.
 
-## Key Features
+## Features
 
-* **Python Backend:** Detection, masking, and restoring run natively in a centralized Flask application.
+* **Trained name detection:** A Hugging Face XLM-RoBERTa token-classification pipeline (`Davlan/xlm-roberta-base-ner-hrl`) finds people (`PER`), organisations (`ORG`) and locations (`LOC`). It loads once at startup in `app.py` and uses Apple Silicon (MPS), CUDA or CPU, whichever is available. Names are on by default.
+* **Regex for structured data:** Emails, cards (Luhn-checked), SSNs, IP addresses and phone numbers.
+* **Consistent tokens:** Repeated values reuse one token, so context survives masking.
+* **Custom watchlist:** Add project names or codenames. Matches (case-insensitive, whole word) become `<CUSTOM_n>`.
+* **Synchronized hover:** Hover a token in the safe payload to highlight its original text in your prompt.
+* **One-click export:** Copy the sanitized prompt or download it as `sanitized-prompt.txt`.
+* **Liquid glass UI:** Frosted panels over a slowly morphing mesh gradient, with glass-tile chips that glow on hover.
+* **Presentation page (`/website`):** System architecture diagram, compliance positioning, live demo script and roadmap.
 
-
-* **Consistent Tokens:** Repeated values reuse the same token, preserving conversational context for the LLM (e.g., matching a specific person to their email).
-
-
-* **Live Filter Toggles:** Turn specific PII categories on or off and watch the safe payload update dynamically.
-
-
-* **Smart Validation:** Credit card numbers must pass a Luhn check to prevent false positives on standard serial or order numbers.
-
-
-
-## How It Works
-
-1. **Find Personal Data:** Pattern matching scans the prompt for emails, phone numbers, cards, IDs, IP addresses, and optionally, names.
-
-
-2. **Swap in Placeholders:** Each value becomes a mapped token (e.g., `<PHONE_1>`). The same value always gets the same token.
-
-
-3. **Send the Safe Version:** Only the masked prompt goes to the model. The server keeps the real values and never forwards them.
-
-
-4. **Restore the Answer:** When the reply returns, every token is swapped for the original value so the answer reads normally to the user.
-
-
-
-## Installation
-
-Clone the repository and set up your local environment:
+## Install
 
 ```bash
-git clone https://github.com/Syntax-Sage10/privacy-guard.git
-cd privacy-guard
-
-# Create and activate your virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
-
-# Install the required dependencies
 pip install -r requirements.txt
-
-```
-
-## Usage
-
-Start the Flask development server:
-
-```bash
 python3 app.py
-
 ```
 
-Open your browser and navigate to `[http://127.0.0.1:5000](http://127.0.0.1:5000)` to interact with the UI.
+Open http://127.0.0.1:5000. The first run downloads the NER model (about 1 GB). If the model cannot load, the server still runs with the regex categories and the app shows a notice.
 
-## Project Structure
+## Project structure
 
-* **`app.py`**: The Flask server, routing, and JSON API endpoints (`/api/sanitize`, `/api/send`).
+* `app.py`: Flask routes, global NER pipeline loading, JSON API (`/api/sanitize`, `/api/send`).
+* `pii.py`: Detection, overlap resolution, masking, watchlist, simulated LLM, rehydration.
+* `content.py`: Interface copy, architecture, compliance, demo script, roadmap.
+* `templates/`, `static/`: UI.
 
+## API
 
-* **`pii.py`**: The core data protection engine containing the regex categories, masking logic, Luhn validation, and the simulated LLM response generator.
+Both endpoints accept `{ "text": "...", "filters": {"email": true, ...}, "watchlist": ["Project Falcon"] }`.
+`/api/sanitize` returns `safe`, `total`, `spans` and `ner`. `/api/send` returns `raw`, `restored` and `map`.
 
+## Using a real LLM
 
-* **`content.py`**: Interface copy, feature lists, FAQ, and the demonstration tagline.
-
-
-* **`requirements.txt`**: Project dependencies, requiring `flask>=3.0`.
-
-
-
-## Customization: Using a Real LLM
-
-This repository currently uses a simulated model for demonstration purposes. To connect to a live API (like OpenAI, Anthropic, or Hugging Face):
-
-1. Open `pii.py`.
-2. Locate the `fake_llm()` function.
-
-
-3. Replace the mock logic with your preferred API call, ensuring you pass the masked prompt to the model and return its text response.
-
-
+In `pii.py`, replace `fake_llm()` with an API call that sends only the masked prompt (`sanitize(...)["safe"]`) and returns the reply text. `rehydrate()` then restores the values.
 
 ## Limitations
 
-This is a demonstration build. The current detection engine relies on regular expressions, meaning highly unusual formats or unconventional names may be missed. For production deployments handling highly sensitive data, it is recommended to augment the regex engine with a trained Named Entity Recognition (NER) model and implement robust user authentication.# llm-privacy-guard
+This is a demonstration. Regexes can miss unusual formats, the NER model can miss or mislabel names, and the token map is held in request memory only. Add authentication, encrypted storage and audit logging before production use.
+
+## Roadmap
+
+Run as a localised API service or an encrypted edge gateway: a proxy in front of enterprise systems that masks outbound requests, encrypts the token map, and restores responses.
