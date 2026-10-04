@@ -89,4 +89,4 @@ This repository currently uses a simulated model for demonstration purposes. To 
 
 ## Limitations
 
-This is a demonstration build. The current detection engine relies on regular expressions, meaning highly unusual formats or unconventional names may be missed. For production deployments handling highly sensitive data, it is recommended to augment the regex engine with a trained Named Entity Recognition (NER) model and implement robust user authentication.
+This is a demonstration build. The current detection engine relies on regular expressions, meaning highly unusual formats or unconventional names may be missed. For production deployments handling highly sensitive data, it is recommended to augment the regex engine with a trained Named Entity Recognition (NER) model and implement robust user authentication.# llm-privacy-guard
