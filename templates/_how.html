@@ -1,0 +1,16 @@
+{% macro how(c) %}
+<section class="how" id="how-it-works">
+  <h2>How it works</h2>
+  <p class="mut small">Four steps, handled by the Python backend.</p>
+  <div class="grid4">
+    {% for s in c.STEPS %}
+    <div class="glass card"><div class="ib"><i data-lucide="{{ s.icon }}"></i></div><h3>{{ s.title }}</h3><p class="mut">{{ s.body }}</p></div>
+    {% endfor %}
+  </div>
+  <div class="grid2 gap">
+    {% for f in c.FEATURES %}
+    <div class="glass card row"><div class="ib"><i data-lucide="{{ f.icon }}"></i></div><div><h3>{{ f.title }}</h3><p class="mut">{{ f.body }}</p></div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endmacro %}

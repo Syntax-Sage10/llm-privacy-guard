@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% from "_how.html" import how %}
+{% block body %}
+<main class="wrap">
+  <header class="head rise">
+    <div class="logo"><i data-lucide="shield-check"></i></div>
+    <div><h1>Privacy Guard</h1><p class="mut">{{ c.SUBTITLE }}</p></div>
+    <a class="navbtn" href="{{ url_for('website') }}">View Website <i data-lucide="arrow-up-right"></i></a>
+  </header>
+  <div class="grid2">
+    <div class="cols">
+      <section class="glass rise" style="--i:1">
+        <div class="bar"><h2>Your prompt</h2><button class="ghost" id="clear"><i data-lucide="eraser"></i> Clear</button></div>
+        <textarea id="prompt" rows="9" spellcheck="false" placeholder="Type or paste a prompt that includes names, emails, phone numbers, cards…">{{ sample }}</textarea>
+      </section>
+      <section class="glass rise" style="--i:2">
+        <h2>What to filter</h2>
+        <div class="toggles">
+          {% for k in cats %}
+          <button class="tog" role="switch" data-id="{{ k.id }}" aria-checked="{{ 'true' if k.on else 'false' }}">
+            <i data-lucide="{{ k.icon }}"></i><span>{{ k.label }}</span><span class="track"><span class="thumb"></span></span>
+          </button>
+          {% endfor %}
+        </div>
+        <p class="mut small">Name detection is heuristic: it looks for capitalised word pairs and titles like Dr. or Ms.</p>
+      </section>
+    </div>
+    <div class="cols">
+      <section class="glass rise" style="--i:3">
+        <div class="bar"><h2><i data-lucide="lock"></i> Safe payload</h2><span class="pill" id="count">0 values masked</span></div>
+        <div class="panel mono" id="safe" style="min-height:11rem"></div>
+        <button class="primary" id="send"><i data-lucide="send"></i><span id="sendlabel">Send to LLM</span><i class="spin"></i></button>
+      </section>
+      <section class="glass rise" style="--i:4">
+        <h2><i data-lucide="unlock"></i> Restored answer</h2>
+        <div class="panel" style="min-height:13rem">
+          <p class="hint" id="idle">Send the masked prompt to see the answer with your original details put back.</p>
+          <p class="hint" id="wait" hidden>The model is replying to the masked prompt…</p>
+          <div id="result" hidden>
+            <p class="lab">What the model returned</p><div class="mono" id="raw"></div>
+            <p class="lab sep">After restoring your data</p><div class="mono" id="restored"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  {{ how(c) }}
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

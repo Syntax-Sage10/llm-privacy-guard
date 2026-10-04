@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% from "_how.html" import how %}
+{% block title %}Privacy Guard: how it works{% endblock %}
+{% block body %}
+<main class="wrap">
+  <header class="head"><div class="logo"><i data-lucide="shield-check"></i></div><h1 class="brand">Privacy Guard</h1>
+    <a class="navbtn" href="{{ url_for('home') }}">Open the app <i data-lucide="arrow-up-right"></i></a></header>
+  <section class="hero rise">
+    <h1>{{ c.TAGLINE }}</h1>
+    <p>{{ c.SUBTITLE }}</p>
+    <a class="primary inline" href="{{ url_for('home') }}">Try it now <i data-lucide="arrow-right"></i></a>
+  </section>
+  <div class="grid2">
+    <section class="glass"><h2>What you type</h2><div class="panel mono">{{ sample }}</div></section>
+    <section class="glass"><h2>What the model sees</h2><div class="panel mono">{{ example | chips }}</div></section>
+  </div>
+  {{ how(c) }}
+  <section class="glass limits"><h2>What to know before relying on it</h2><p class="mut">{{ c.LIMITS }}</p></section>
+  <section class="how"><h2>Questions</h2>
+    {% for f in c.FAQ %}<details class="glass faq"><summary>{{ f.q }}</summary><p class="mut">{{ f.a }}</p></details>{% endfor %}
+  </section>
+  <footer class="mut small">Privacy Guard is a demo. The model reply is simulated.</footer>
+</main>
+{% endblock %}
