@@ -10,7 +10,11 @@
     <div class="cols">
       <section class="glass rise" style="--i:1">
         <div class="bar"><h2>Your prompt</h2><button class="ghost" id="clear"><i data-lucide="eraser"></i> Clear</button></div>
-        <textarea id="prompt" rows="9" spellcheck="false" placeholder="Type or paste a prompt that includes names, emails, phone numbers, cards…">{{ sample }}</textarea>
+        <div class="editor">
+          <div class="mirror mono-in" id="mirror" aria-hidden="true"></div>
+          <textarea id="prompt" class="mono-in" rows="9" spellcheck="false" placeholder="Type or paste a prompt that includes names, emails, phone numbers, cards…">{{ sample }}</textarea>
+        </div>
+        <p class="mut small">Hover a token in the safe payload to highlight its original text here.</p>
       </section>
       <section class="glass rise" style="--i:2">
         <h2>What to filter</h2>
@@ -21,13 +25,23 @@
           </button>
           {% endfor %}
         </div>
-        <p class="mut small">Name detection is heuristic: it looks for capitalised word pairs and titles like Dr. or Ms.</p>
+        <p class="mut small" id="nernote" {% if ner %}hidden{% endif %}>The name model did not load, so names, organisations and locations are not being masked. Check the server log.</p>
+        <h2 class="subh"><i data-lucide="list-plus"></i> Custom watchlist</h2>
+        <div class="wl-add">
+          <input id="wl-input" type="text" maxlength="80" placeholder="Project or codename, then press Enter" autocomplete="off">
+          <button class="ghost solid" id="wl-btn" type="button"><i data-lucide="plus"></i> Add</button>
+        </div>
+        <div class="wl-list" id="wl-list"></div>
       </section>
     </div>
     <div class="cols">
       <section class="glass rise" style="--i:3">
         <div class="bar"><h2><i data-lucide="lock"></i> Safe payload</h2><span class="pill" id="count">0 values masked</span></div>
         <div class="panel mono" id="safe" style="min-height:11rem"></div>
+        <div class="export">
+          <button class="ghost solid" id="copy"><i data-lucide="copy"></i><span id="copylabel">Copy</span></button>
+          <button class="ghost solid" id="download"><i data-lucide="download"></i> Download .txt</button>
+        </div>
         <button class="primary" id="send"><i data-lucide="send"></i><span id="sendlabel">Send to LLM</span><i class="spin"></i></button>
       </section>
       <section class="glass rise" style="--i:4">
