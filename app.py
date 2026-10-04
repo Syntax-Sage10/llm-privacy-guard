@@ -1,4 +1,5 @@
 import re
+import importlib
 from flask import Flask, render_template, request, jsonify
 from markupsafe import Markup, escape
 import pii, content
@@ -10,7 +11,7 @@ def load_ner():
     """Load the Hugging Face XLM-RoBERTa NER pipeline once, on the best device available."""
     try:
         import torch
-        from transformers import pipeline
+        pipeline = importlib.import_module("transformers").pipeline
         if torch.backends.mps.is_available():
             device, label = "mps", "Apple Silicon (MPS)"
         elif torch.cuda.is_available():
