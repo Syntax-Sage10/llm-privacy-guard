@@ -64,15 +64,52 @@ document.querySelectorAll(".tog").forEach((b) => {
     b.setAttribute("aria-checked", on); filters[b.dataset.id] = on; refresh();
   });
 });
-$("#prompt").addEventListener("input", refresh);
-$("#clear").addEventListener("click", () => { $("#prompt").value = ""; refresh(); });
+prompt_.addEventListener("input", () => { spans = []; paintMirror(null); refresh(); });
+$("#clear").addEventListener("click", () => { prompt_.value = ""; refresh(); paintMirror(null); });
+
+/* ---- Custom watchlist ---- */
+function drawWatchlist() {
+  const box = $("#wl-list");
+  box.replaceChildren();
+  watchlist.forEach((w, i) => {
+    const t = document.createElement("span"); t.className = "chip t-CUSTOM wl-chip";
+    t.append(document.createTextNode(w));
+    const x = document.createElement("button"); x.type = "button"; x.setAttribute("aria-label", "Remove " + w); x.textContent = "×";
+    x.addEventListener("click", () => { watchlist.splice(i, 1); drawWatchlist(); refresh(); });
+    t.append(x); box.append(t);
+  });
+}
+function addWatch() {
+  const input = $("#wl-input"), v = input.value.trim();
+  if (v && !watchlist.some((w) => w.toLowerCase() === v.toLowerCase()) && watchlist.length < 50) {
+    watchlist.push(v); drawWatchlist(); refresh();
+  }
+  input.value = ""; input.focus();
+}
+$("#wl-btn").addEventListener("click", addWatch);
+$("#wl-input").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addWatch(); } });
+
+/* ---- One-click export ---- */
+$("#copy").addEventListener("click", async () => {
+  if (!lastSafe) return;
+  const label = $("#copylabel");
+  try { await navigator.clipboard.writeText(lastSafe); label.textContent = "Copied"; }
+  catch { label.textContent = "Copy failed"; }
+  setTimeout(() => (label.textContent = "Copy"), 1500);
+});
+$("#download").addEventListener("click", () => {
+  if (!lastSafe) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lastSafe], { type: "text/plain" }));
+  a.download = "sanitized-prompt.txt"; a.click(); URL.revokeObjectURL(a.href);
+});
 
 $("#send").addEventListener("click", async () => {
-  const text = $("#prompt").value, btn = $("#send");
+  const text = prompt_.value, btn = $("#send");
   if (!text.trim() || btn.disabled) return;
   btn.disabled = true; btn.classList.add("busy"); $("#sendlabel").textContent = "Sending masked prompt";
   $("#idle").hidden = true; $("#result").hidden = true; $("#wait").hidden = false;
-  const [d] = await Promise.all([post("/api/send", { text, filters }), new Promise((r) => setTimeout(r, 1200))]);
+  const [d] = await Promise.all([post("/api/send", { text, filters, watchlist }), new Promise((r) => setTimeout(r, 1200))]);
   render($("#raw"), d.raw);
   render($("#restored"), d.raw, (t) => d.map[t] ?? t);
   $("#wait").hidden = true; $("#result").hidden = false;
